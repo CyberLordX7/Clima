@@ -1,0 +1,38 @@
+import '../css/app.css';
+import './bootstrap';
+
+import { createInertiaApp } from '@inertiajs/react';
+import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import { createRoot, hydrateRoot } from 'react-dom/client';
+import { AlarmProvider } from './context/AlarmContext';
+import { ThemeProvider } from './context/ThemeContext';
+
+const appName = import.meta.env.VITE_APP_NAME || 'ClimaPay';
+
+createInertiaApp({
+    title: (title) => `${title} - ${appName}`,
+    resolve: (name) =>
+        resolvePageComponent(
+            `./Pages/${name}.tsx`,
+            import.meta.glob('./Pages/**/*.tsx'),
+        ),
+    setup({ el, App, props }: { el: HTMLElement; App: React.FC; props: any }) {
+        const appElement = (
+            <ThemeProvider initialTheme={props.initialPage.props.theme ?? 'light'}>
+                <AlarmProvider>
+                    <App {...props} />
+                </AlarmProvider>
+            </ThemeProvider>
+        );
+
+        if (import.meta.env.SSR) {
+            hydrateRoot(el, appElement);
+            return;
+        }
+
+        createRoot(el).render(appElement);
+    },
+    progress: {
+        color: '#4B5563',
+    },
+});
